@@ -1,0 +1,6 @@
+{
+  "name": "営業ボイス議事録",
+  "description": "営業のボイスメモから、AIが文字起こしと要約を自動生成し、カレンダーで訪問日の記録もできるiPhone対応の活動議事録アプリです。",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
