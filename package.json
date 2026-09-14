@@ -1,0 +1,19 @@
+{
+  "name": "sales-voice-memo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "営業ボイス議事録 - 商談後の音声をGemini APIで文字起こし・要約するiPhone対応Webアプリ",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2"
+  }
+}
