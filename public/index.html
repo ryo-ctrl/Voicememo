@@ -1,1 +1,998 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F6F4EF">
+<title>営業ボイス議事録</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#F6F4EF; --surface:#FFFFFF; --surface-2:#EFEDE5;
+    --ink:#20242B; --ink-muted:#5B6270; --ink-faint:#8A8F99; --line:#DEDBCF;
+    --accent:#2E4374; --accent-ink:#FFFFFF; --accent-soft:#E6EAF3;
+    --gold:#A9791F; --gold-soft:#F3E9D2;
+    --danger:#AE4438; --danger-soft:#F6E4E0;
+    --shadow: 0 1px 2px rgba(32,36,43,0.06), 0 6px 16px rgba(32,36,43,0.07);
+    --radius: 14px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#15171B; --surface:#1D2026; --surface-2:#242832;
+      --ink:#EAE8E2; --ink-muted:#A2A7B2; --ink-faint:#767C88; --line:#2B2F38;
+      --accent:#8399CB; --accent-ink:#161A22; --accent-soft:#232A3C;
+      --gold:#D6B15B; --gold-soft:#332A15;
+      --danger:#E08A7E; --danger-soft:#3A2320;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.35);
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button{font-family:inherit;}
+  img,svg{max-width:100%;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 
+  .app{max-width:460px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; background:var(--bg);}
+
+  .topbar{
+    position:sticky; top:0; z-index:5; display:flex; align-items:center; justify-content:space-between;
+    gap:10px; padding:14px 18px 12px; background:var(--bg); border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    font-family:"Shippori Mincho",serif; font-weight:800; font-size:15px;
+    color:var(--accent-ink); background:var(--accent); width:30px; height:30px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .brand h1{font-family:"Shippori Mincho",serif; font-weight:700; font-size:19px; letter-spacing:.02em; margin:0;}
+  .brand small{display:block; font-size:10.5px; color:var(--ink-faint); letter-spacing:.06em;}
+
+  .viewport{flex:1; padding:16px 16px 12px;}
+
+  .tabbar{
+    position:sticky; bottom:0; z-index:5; display:grid; grid-template-columns:1fr 1fr 1fr;
+    background:var(--surface); border-top:1px solid var(--line); padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+  }
+  .tab{
+    display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none;
+    color:var(--ink-faint); padding:8px 4px; border-radius:10px; cursor:pointer; font-size:11px; font-weight:500;
+  }
+  .tab svg{width:22px; height:22px;}
+  .tab.active{color:var(--accent);}
+
+  h2.view-title{font-family:"Shippori Mincho",serif; font-size:19px; font-weight:700; margin:2px 0 14px;}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12px; color:var(--ink-muted); margin-bottom:6px; font-weight:500;}
+  .field input[type=text], .field input[type=date], textarea{
+    width:100%; background:var(--surface); border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-size:15px; color:var(--ink); font-family:inherit;
+  }
+  textarea{resize:vertical; line-height:1.6;}
+  .field input:focus, textarea:focus{border-color:var(--accent);}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px; border:none; border-radius:11px;
+    cursor:pointer; font-size:15px; font-weight:600; padding:12px 18px; font-family:inherit;
+  }
+  .btn-primary{background:var(--accent); color:var(--accent-ink);}
+  .btn-ghost{background:var(--surface-2); color:var(--ink);}
+  .btn-danger{background:var(--danger-soft); color:var(--danger);}
+  .btn-block{width:100%;}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .btn-sm{padding:8px 12px; font-size:13px; border-radius:9px;}
+
+  .record-pad{display:flex; flex-direction:column; align-items:center; padding:26px 16px 10px;}
+  .mic-btn{
+    width:100px; height:100px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--accent); color:var(--accent-ink); display:flex; align-items:center; justify-content:center;
+    box-shadow:0 10px 24px rgba(46,67,116,.28); transition:transform .15s ease;
+  }
+  .mic-btn svg{width:38px; height:38px;}
+  .mic-btn.recording{background:var(--danger); box-shadow:0 10px 24px rgba(174,68,56,.32); animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);} 50%{transform:scale(1.05);}}
+  .mic-label{margin-top:14px; font-size:13px; color:var(--ink-muted); text-align:center;}
+
+  .status-chip{
+    display:inline-flex; align-items:center; gap:6px; background:var(--gold-soft); color:var(--gold);
+    font-size:12px; font-weight:700; padding:5px 13px; border-radius:999px; margin:0 auto 2px;
+  }
+  .status-chip[hidden]{display:none;}
+  .status-chip::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--gold);}
+
+  .wave-wrap{width:100%; height:60px; background:var(--surface-2); border-radius:14px; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:0 10px;}
+  .wave-wrap canvas{width:100%; height:100%; display:block;}
+
+  .rec-timer{margin-top:12px; font-variant-numeric:tabular-nums; font-size:24px; font-weight:600; color:var(--ink); letter-spacing:.02em; min-height:30px;}
+
+  .rec-controls{display:flex; align-items:flex-start; justify-content:center; gap:28px; margin-top:16px;}
+  .rec-control-col{display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .rec-control-label{font-size:11.5px; color:var(--ink-muted); font-weight:600;}
+  .pause-btn{
+    width:60px; height:60px; border-radius:50%; border:none; cursor:pointer; background:var(--surface-2); color:var(--ink);
+    display:flex; align-items:center; justify-content:center; transition:background .15s ease, color .15s ease;
+  }
+  .pause-btn svg{width:22px; height:22px;}
+  .pause-btn.is-paused{background:var(--gold-soft); color:var(--gold);}
+
+  .upload-row{margin-top:18px; text-align:center;}
+  .upload-label{
+    display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:600; color:var(--ink-muted);
+    background:var(--surface-2); padding:9px 16px; border-radius:999px; cursor:pointer;
+  }
+  .upload-label input{display:none;}
+
+  .hint{font-size:12px; color:var(--ink-faint); line-height:1.6; background:var(--surface-2); border-radius:10px; padding:10px 12px; margin-top:16px;}
+  .hint b{color:var(--ink-muted);}
+  .hint.error{background:var(--danger-soft); color:var(--danger);}
+
+  .spinner-block{display:flex; flex-direction:column; align-items:center; gap:16px; padding:50px 20px;}
+  .spinner{width:38px; height:38px; border-radius:50%; border:3px solid var(--surface-2); border-top-color:var(--accent); animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spinner-text{font-size:13.5px; color:var(--ink-muted); text-align:center; line-height:1.6;}
+
+  .review-actions{display:flex; gap:10px; margin-top:6px;}
+  .review-actions .btn{flex:1;}
+
+  .kv-row{display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px;}
+  .kv-row:last-child{border-bottom:none;}
+  .kv-key{width:84px; flex-shrink:0; color:var(--ink-muted); font-size:12.5px; padding-top:2px;}
+  .kv-val{flex:1; font-weight:500;}
+  .points-list{list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:8px;}
+  .points-list li{display:flex; gap:8px; font-size:14.5px; line-height:1.55;}
+  .points-list li::before{content:"・"; color:var(--gold); flex-shrink:0;}
+  .points-editable li textarea{flex:1;}
+
+  .section-label{font-size:11.5px; letter-spacing:.06em; color:var(--ink-faint); font-weight:600; margin:20px 0 8px; text-transform:uppercase;}
+
+  .memo-card{padding:14px 14px 12px; margin-bottom:10px; cursor:pointer;}
+  .memo-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .memo-date{font-weight:700; font-size:14px; font-variant-numeric:tabular-nums;}
+  .memo-rep{font-size:11.5px; color:var(--ink-faint);}
+  .memo-partner{margin-top:4px; font-size:14px; color:var(--ink-muted); font-weight:500;}
+  .memo-preview{margin-top:6px; font-size:13px; color:var(--ink-muted); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+
+  .event-card{padding:14px; margin-bottom:10px; border-color:var(--gold-soft);}
+  .event-badge{display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:700; color:var(--gold); background:var(--gold-soft); padding:3px 9px; border-radius:999px;}
+
+  .search-box{display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:9px 12px; margin-bottom:14px;}
+  .search-box input{flex:1; border:none; outline:none; background:none; font-size:14px; color:var(--ink); font-family:inherit;}
+  .search-box svg{width:16px; height:16px; color:var(--ink-faint); flex-shrink:0;}
+
+  .empty-state{text-align:center; padding:46px 20px; color:var(--ink-faint); font-size:13.5px; line-height:1.7;}
+  .empty-state svg{width:38px; height:38px; margin-bottom:10px; opacity:.5;}
+
+  .cal-nav{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .cal-nav button{background:var(--surface-2); border:none; border-radius:8px; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink);}
+  .cal-month{font-family:"Shippori Mincho",serif; font-size:17px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;}
+  .cal-dow{font-size:11px; color:var(--ink-faint); padding-bottom:4px;}
+  .cal-cell{
+    position:relative; aspect-ratio:1; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    font-size:13.5px; font-variant-numeric:tabular-nums; cursor:pointer; background:var(--surface); border:1px solid var(--line); color:var(--ink);
+  }
+  .cal-cell.empty{visibility:hidden; cursor:default;}
+  .cal-cell.today{border-color:var(--accent); font-weight:700;}
+  .cal-cell.selected{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+  .cal-cell .dots{position:absolute; bottom:5px; display:flex; gap:2.5px;}
+  .cal-cell .dot{width:5px; height:5px; border-radius:50%; background:var(--accent);}
+  .cal-cell .dot.gold{background:var(--gold);}
+  .cal-cell.selected .dot{background:var(--accent-ink);}
+  .cal-day-list{margin-top:16px;}
+  .cal-add-btn{display:flex; align-items:center; gap:6px; background:var(--accent-soft); color:var(--accent); border:none; border-radius:999px; padding:7px 13px; font-size:12px; font-weight:700; cursor:pointer;}
+
+  .detail-header{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; gap:10px;}
+  .back-link{background:none; border:none; color:var(--accent); font-size:14px; font-weight:600; cursor:pointer; padding:4px 0; display:flex; align-items:center; gap:4px;}
+  .transcript-box{background:var(--surface-2); border-radius:10px; padding:12px 14px; font-size:13.5px; line-height:1.75; color:var(--ink-muted); white-space:pre-wrap; max-height:260px; overflow-y:auto;}
+  .confirm-strip{display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--danger-soft); border-radius:10px; padding:10px 12px; margin-top:10px; font-size:13px; color:var(--danger);}
+
+  .modal-overlay{position:fixed; inset:0; background:rgba(20,22,26,.5); z-index:30; display:flex; align-items:flex-end; justify-content:center;}
+  .modal-sheet{background:var(--surface); width:100%; max-width:460px; border-radius:20px 20px 0 0; padding:20px 20px calc(20px + env(safe-area-inset-bottom)); box-shadow:var(--shadow);}
+  .modal-sheet h3{font-family:"Shippori Mincho",serif; font-size:17px; margin:0 0 14px;}
+
+  .toast{
+    position:fixed; left:50%; bottom:86px; transform:translateX(-50%); background:var(--ink); color:var(--bg);
+    font-size:13px; padding:10px 16px; border-radius:999px; box-shadow:var(--shadow); z-index:40; opacity:0;
+    pointer-events:none; transition:opacity .2s ease; max-width:90%; text-align:center;
+  }
+  .toast.show{opacity:1;}
+
+  @media (prefers-reduced-motion: reduce){
+    .mic-btn.recording{animation:none;}
+    .spinner{animation:none; border-top-color:var(--surface-2);}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">議</span>
+      <div>
+        <h1>営業ボイス議事録</h1>
+        <small>VOICE MEMO &amp; AI SUMMARY</small>
+      </div>
+    </div>
+  </header>
+
+  <main class="viewport" id="viewport"></main>
+
+  <nav class="tabbar" id="tabbar">
+    <button class="tab" data-view="record" aria-label="記録">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5.5A3.5 3.5 0 0 0 12 15Z" stroke="currentColor" stroke-width="1.6"/><path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 18v2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>記録</span>
+    </button>
+    <button class="tab" data-view="list" aria-label="履歴">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M5 6.5h14M5 12h14M5 17.5h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>履歴</span>
+    </button>
+    <button class="tab" data-view="calendar" aria-label="カレンダー">
+      <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M4 9.5h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>カレンダー</span>
+    </button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var els = {
+    viewport: document.getElementById('viewport'),
+    tabbar: document.getElementById('tabbar'),
+    toast: document.getElementById('toast'),
+  };
+
+  var STORE_MEMOS = 'svm_memos_v1';
+  var STORE_EVENTS = 'svm_events_v1';
+  var STORE_LAST_NAME = 'svm_last_name';
+
+  var state = {
+    view: 'record',
+    memos: [],
+    events: [],
+    selectedDate: null,
+    calMonth: (function(){ var d=new Date(); return {y:d.getFullYear(), m:d.getMonth()}; })(),
+    detailId: null,
+    confirmDeleteId: null,
+    showEventModal: false,
+    newEvent: {title:'', clientName:'', notes:''},
+    record: {
+      phase: 'idle', // idle | recording | paused | analyzing | review | error
+      startedAt: null,
+      elapsedTimer: null,
+      visitDate: todayStr(),
+      userName: '',
+      clientName: '',
+      transcript: '',
+      points: [],
+      errorMsg: '',
+      audioUrl: null,
+    }
+  };
+
+  var rec = {
+    mediaRecorder: null, stream: null, chunks: [],
+    audioCtx: null, analyser: null, source: null, freqData: null,
+    bars: null, rafId: null, canvasCtx: null, canvasW: 0, canvasH: 0,
+    pausedAt: null, reduceMotion: false
+  };
+  var BAR_COUNT = 26;
+  var PAUSE_SVG = '<svg viewBox="0 0 24 24" fill="none"><rect x="6" y="5" width="4" height="14" rx="1.3" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.3" fill="currentColor"/></svg>';
+  var PLAY_SVG = '<svg viewBox="0 0 24 24" fill="none"><path d="M7.5 5.2v13.6a1 1 0 0 0 1.53.85l10.9-6.8a1 1 0 0 0 0-1.7l-10.9-6.8a1 1 0 0 0-1.53.85Z" fill="currentColor"/></svg>';
+
+  // ---------- utils ----------
+  function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+  function pad(n){ return n<10 ? '0'+n : ''+n; }
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function fmtDateLabel(iso){
+    if(!iso) return '';
+    var p = iso.split('-'); var d = new Date(+p[0], +p[1]-1, +p[2]);
+    var dow = ['日','月','火','水','木','金','土'][d.getDay()];
+    return p[0]+'年'+(+p[1])+'月'+(+p[2])+'日('+dow+')';
+  }
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){ els.toast.classList.remove('show'); }, 2800);
+  }
+  function loadJSON(key, fallback){
+    try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+  }
+  function saveJSON(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){ showToast('この端末には保存できませんでした'); }
+  }
+  function loadLastName(){ try{ return localStorage.getItem(STORE_LAST_NAME) || ''; }catch(e){ return ''; } }
+  function saveLastName(v){ try{ localStorage.setItem(STORE_LAST_NAME, v); }catch(e){} }
+
+  // ---------- data (localStorage) ----------
+  function loadAll(){
+    state.memos = loadJSON(STORE_MEMOS, []);
+    state.events = loadJSON(STORE_EVENTS, []);
+  }
+  function saveMemo(memo){
+    state.memos.unshift(memo);
+    saveJSON(STORE_MEMOS, state.memos);
+  }
+  function deleteMemo(id){
+    state.memos = state.memos.filter(function(m){ return m.id !== id; });
+    saveJSON(STORE_MEMOS, state.memos);
+    state.detailId = null; state.view = 'list';
+    render();
+    showToast('削除しました');
+  }
+  function saveEvent(ev){
+    state.events.push(ev);
+    saveJSON(STORE_EVENTS, state.events);
+  }
+  function deleteEvent(id){
+    state.events = state.events.filter(function(e){ return e.id !== id; });
+    saveJSON(STORE_EVENTS, state.events);
+    render();
+  }
+
+  // ---------- recording ----------
+  function pickMimeType(){
+    if(!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
+    var cands = ['audio/mp4','audio/aac','audio/webm;codecs=opus','audio/webm'];
+    for(var i=0;i<cands.length;i++){ if(MediaRecorder.isTypeSupported(cands[i])) return cands[i]; }
+    return '';
+  }
+
+  async function startRecording(){
+    var r = state.record;
+    r.transcript=''; r.points=[]; r.errorMsg=''; r.audioUrl=null;
+    rec.chunks = [];
+    rec.pausedAt = null;
+    try{ rec.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ rec.reduceMotion = false; }
+
+    try{
+      rec.stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    }catch(e){
+      var name = e && e.name;
+      var msg;
+      if(name === 'NotAllowedError') msg = 'マイクへのアクセスが許可されていません。設定でこのサイトのマイクを許可してください。';
+      else if(name === 'NotFoundError') msg = 'マイクが見つかりませんでした。';
+      else if(name === 'NotReadableError') msg = '他のアプリがマイクを使用中の可能性があります。';
+      else msg = 'マイクを開始できませんでした('+(name||'不明なエラー')+')。';
+      showToast(msg);
+      return;
+    }
+
+    try{
+      var mime = pickMimeType();
+      rec.mediaRecorder = mime ? new MediaRecorder(rec.stream, {mimeType:mime}) : new MediaRecorder(rec.stream);
+      rec.mediaRecorder.ondataavailable = function(e){ if(e.data && e.data.size>0) rec.chunks.push(e.data); };
+      rec.mediaRecorder.start();
+    }catch(e){
+      showToast('録音を開始できませんでした。お使いのブラウザが対応していない可能性があります。');
+      rec.stream.getTracks().forEach(function(t){t.stop();});
+      return;
+    }
+
+    setupAudioAnalyser();
+    r.phase = 'recording';
+    r.startedAt = Date.now();
+    startTimer();
+    render();
+    setupWaveCanvas();
+    startWaveLoop();
+  }
+
+  function setupAudioAnalyser(){
+    try{
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC || !rec.stream) return;
+      rec.audioCtx = new AC();
+      rec.analyser = rec.audioCtx.createAnalyser();
+      rec.analyser.fftSize = 256;
+      rec.analyser.smoothingTimeConstant = 0.75;
+      rec.source = rec.audioCtx.createMediaStreamSource(rec.stream);
+      rec.source.connect(rec.analyser);
+      rec.freqData = new Uint8Array(rec.analyser.frequencyBinCount);
+      rec.bars = new Array(BAR_COUNT).fill(0.06);
+    }catch(e){ rec.analyser = null; }
+  }
+  function setupWaveCanvas(){
+    var canvas = document.getElementById('waveCanvas');
+    if(!canvas) return;
+    var dpr = window.devicePixelRatio || 1;
+    var rectBox = canvas.getBoundingClientRect();
+    var w = Math.max(rectBox.width, 1), h = Math.max(rectBox.height, 1);
+    canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    rec.canvasCtx = ctx; rec.canvasW = w; rec.canvasH = h;
+    drawBars(rec.bars || new Array(BAR_COUNT).fill(0.06));
+  }
+  function computeBarTargets(){
+    var freq = rec.freqData, bins = freq.length, n = BAR_COUNT;
+    var perBar = Math.max(1, Math.floor(bins/n));
+    var targets = new Array(n);
+    for(var i=0;i<n;i++){
+      var start=i*perBar, sum=0, cnt=0;
+      for(var j=start;j<start+perBar && j<bins;j++){ sum+=freq[j]; cnt++; }
+      var norm = cnt ? (sum/cnt)/255 : 0;
+      targets[i] = Math.pow(norm, 0.6);
+    }
+    return targets;
+  }
+  function drawBars(values){
+    var ctx = rec.canvasCtx; if(!ctx) return;
+    var w = rec.canvasW, h = rec.canvasH;
+    ctx.clearRect(0,0,w,h);
+    var n = values.length, gap = 3;
+    var barW = Math.max(1.5, (w - gap*(n-1))/n);
+    var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2E4374';
+    ctx.fillStyle = accentColor;
+    for(var i=0;i<n;i++){
+      var barH = Math.max(3, values[i]*h);
+      var x = i*(barW+gap), y = (h-barH)/2, r = Math.min(barW/2, 4);
+      ctx.globalAlpha = 0.5 + values[i]*0.5;
+      ctx.beginPath();
+      if(ctx.roundRect){ ctx.roundRect(x,y,barW,barH,r); } else { ctx.rect(x,y,barW,barH); }
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  function waveTick(){
+    if(!rec.analyser) return;
+    rec.analyser.getByteFrequencyData(rec.freqData);
+    var targets = computeBarTargets();
+    for(var i=0;i<rec.bars.length;i++){
+      var tgt = Math.max(0.06, targets[i]);
+      rec.bars[i] += (tgt - rec.bars[i]) * 0.35;
+    }
+    drawBars(rec.bars);
+    rec.rafId = requestAnimationFrame(waveTick);
+  }
+  function startWaveLoop(){
+    cancelWaveLoop();
+    if(!rec.analyser) return;
+    if(rec.reduceMotion){
+      rec.analyser.getByteFrequencyData(rec.freqData);
+      drawBars(computeBarTargets().map(function(v){ return Math.max(0.15, v); }));
+      return;
+    }
+    rec.rafId = requestAnimationFrame(waveTick);
+  }
+  function cancelWaveLoop(){ if(rec.rafId){ cancelAnimationFrame(rec.rafId); rec.rafId = null; } }
+
+  function startTimer(){
+    stopTimer();
+    state.record.elapsedTimer = setInterval(function(){
+      var el = document.getElementById('recTimer');
+      if(!el) return;
+      var s = Math.floor((Date.now() - state.record.startedAt)/1000);
+      el.textContent = pad(Math.floor(s/60))+':'+pad(s%60);
+    }, 500);
+  }
+  function stopTimer(){ if(state.record.elapsedTimer){ clearInterval(state.record.elapsedTimer); state.record.elapsedTimer = null; } }
+
+  function pauseRecording(){
+    var r = state.record;
+    if(r.phase !== 'recording') return;
+    r.phase = 'paused';
+    if(rec.mediaRecorder && rec.mediaRecorder.state === 'recording'){ try{ rec.mediaRecorder.pause(); }catch(e){} }
+    if(rec.audioCtx && rec.audioCtx.state === 'running'){ rec.audioCtx.suspend().catch(function(){}); }
+    cancelWaveLoop();
+    if(rec.bars) drawBars(rec.bars.map(function(){ return 0.07; }));
+    rec.pausedAt = Date.now();
+    stopTimer();
+    updatePauseUI(true);
+  }
+  function resumeRecording(){
+    var r = state.record;
+    if(r.phase !== 'paused') return;
+    r.phase = 'recording';
+    if(rec.pausedAt){ r.startedAt += (Date.now()-rec.pausedAt); rec.pausedAt=null; }
+    if(rec.mediaRecorder && rec.mediaRecorder.state === 'paused'){ try{ rec.mediaRecorder.resume(); }catch(e){} }
+    if(rec.audioCtx && rec.audioCtx.state === 'suspended'){ rec.audioCtx.resume().catch(function(){}); }
+    startTimer();
+    startWaveLoop();
+    updatePauseUI(false);
+  }
+  function updatePauseUI(isPaused){
+    var chip = document.getElementById('pauseChip');
+    if(chip) chip.hidden = !isPaused;
+    var btn = document.getElementById('btnPauseRec');
+    if(btn){
+      btn.innerHTML = isPaused ? PLAY_SVG : PAUSE_SVG;
+      btn.classList.toggle('is-paused', isPaused);
+    }
+    var label = document.getElementById('pauseCtrlLabel');
+    if(label) label.textContent = isPaused ? '再開' : '一時停止';
+  }
+
+  function teardownRecordingSession(){
+    cancelWaveLoop();
+    if(rec.source){ try{ rec.source.disconnect(); }catch(e){} rec.source=null; }
+    if(rec.audioCtx){ try{ rec.audioCtx.close(); }catch(e){} rec.audioCtx=null; }
+    rec.analyser = null; rec.canvasCtx = null;
+  }
+
+  function stopRecording(){
+    stopTimer();
+    teardownRecordingSession();
+    var r = state.record;
+    if(rec.mediaRecorder && rec.mediaRecorder.state !== 'inactive'){
+      rec.mediaRecorder.onstop = function(){
+        var blob = new Blob(rec.chunks, {type: rec.mediaRecorder.mimeType || 'audio/mp4'});
+        finishStop(blob);
+      };
+      try{ rec.mediaRecorder.stop(); }catch(e){ finishStop(null); }
+    } else {
+      finishStop(rec.chunks.length ? new Blob(rec.chunks) : null);
+    }
+    function finishStop(blob){
+      if(rec.stream){ rec.stream.getTracks().forEach(function(t){t.stop();}); rec.stream=null; }
+      if(blob && blob.size > 0){
+        r.audioUrl = URL.createObjectURL(blob);
+        analyzeAudio(blob);
+      } else {
+        r.phase = 'idle';
+        showToast('録音データが取得できませんでした。もう一度お試しください。');
+        render();
+      }
+    }
+  }
+
+  function blobToBase64(blob){
+    return new Promise(function(resolve, reject){
+      var reader = new FileReader();
+      reader.onloadend = function(){
+        var result = reader.result;
+        resolve(result.split(',')[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function analyzeAudio(blob){
+    var r = state.record;
+    r.phase = 'analyzing';
+    render();
+
+    if(blob.size > 19 * 1024 * 1024){
+      r.phase = 'error';
+      r.errorMsg = '録音時間が長すぎて送信できません(20MB制限)。録音を分けて短めにするか、ファイルアップロードで小さいファイルをお試しください。';
+      render();
+      return;
+    }
+
+    try{
+      var base64 = await blobToBase64(blob);
+      var mimeType = blob.type || 'audio/mp4';
+      var res = await fetch('/api/transcribe', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({audio: base64, mimeType: mimeType})
+      });
+      var data = await res.json().catch(function(){ return null; });
+      if(!res.ok){
+        throw new Error((data && data.error) || ('サーバーエラー ('+res.status+')'));
+      }
+      r.userName = (data.userName && data.userName !== '確認中') ? data.userName : loadLastName();
+      r.clientName = data.clientName || '';
+      r.transcript = data.transcription || '';
+      r.points = (Array.isArray(data.summaryPoints) && data.summaryPoints.length) ? data.summaryPoints : [''];
+      if(r.userName) saveLastName(r.userName);
+      r.phase = 'review';
+    }catch(e){
+      r.phase = 'error';
+      r.errorMsg = (e && e.message) ? e.message : 'AI解析に失敗しました。通信環境をご確認の上、もう一度お試しください。';
+    }
+    render();
+  }
+
+  function handleFilePicked(file){
+    if(!file) return;
+    var r = state.record;
+    r.visitDate = r.visitDate || todayStr();
+    r.audioUrl = URL.createObjectURL(file);
+    analyzeAudio(file);
+  }
+
+  function resetRecordDraft(){
+    state.record = {
+      phase:'idle', startedAt:null, elapsedTimer:null,
+      visitDate: todayStr(), userName: loadLastName(), clientName:'',
+      transcript:'', points: [], errorMsg:'', audioUrl:null
+    };
+  }
+
+  // ---------- views ----------
+  function render(){
+    els.tabbar.querySelectorAll('.tab').forEach(function(btn){
+      btn.classList.toggle('active', btn.dataset.view === state.view && state.detailId===null);
+    });
+    var html = '';
+    if(state.detailId !== null){ html = viewDetail(); }
+    else if(state.view === 'record'){ html = viewRecord(); }
+    else if(state.view === 'list'){ html = viewList(); }
+    else { html = viewCalendar(); }
+    els.viewport.innerHTML = html;
+    if(state.showEventModal) renderEventModal();
+  }
+
+  function viewRecord(){
+    var r = state.record;
+
+    if(r.phase === 'idle'){
+      return ''+
+      '<h2 class="view-title">新しい商談記録</h2>'+
+      '<div class="card" style="padding:16px;">'+
+        '<div class="field" style="margin-bottom:2px;"><label>訪問日</label><input type="date" id="f-date" value="'+escapeHtml(r.visitDate)+'"></div>'+
+      '</div>'+
+      '<div class="record-pad">'+
+        '<button class="mic-btn" id="btnStartRec" aria-label="録音開始">'+
+          '<svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3.5 3.5 0 0 0 3.5-3.5V6a3.5 3.5 0 0 0-7 0v5.5A3.5 3.5 0 0 0 12 15Z" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 18v2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'+
+        '</button>'+
+        '<div class="mic-label">タップして商談メモの録音を開始</div>'+
+        '<div class="upload-row">'+
+          '<label class="upload-label">'+
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 16V4M12 4l-4 4M12 4l4 4M5 20h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+            '<span>録音済みの音声ファイルを解析</span>'+
+            '<input type="file" accept="audio/*" id="f-file">'+
+          '</label>'+
+        '</div>'+
+      '</div>'+
+      '<div class="hint"><b>ご利用にあたって：</b>録音を終えると自動でAI(Gemini)に送られ、文字起こしと要約が生成されます。話す際に「担当は○○、相手は○○様」のように名乗っていただくと、自動で読み取られます。</div>';
+    }
+
+    if(r.phase === 'recording' || r.phase === 'paused'){
+      var isPaused = r.phase === 'paused';
+      return ''+
+      '<h2 class="view-title">録音中</h2>'+
+      '<div class="record-pad" style="padding-top:8px;">'+
+        '<span class="status-chip" id="pauseChip"'+(isPaused?'':' hidden')+'>一時停止中</span>'+
+        '<div class="wave-wrap"><canvas id="waveCanvas"></canvas></div>'+
+        '<div class="rec-timer" id="recTimer">00:00</div>'+
+        '<div class="rec-controls">'+
+          '<div class="rec-control-col">'+
+            '<button class="pause-btn'+(isPaused?' is-paused':'')+'" id="btnPauseRec" aria-label="'+(isPaused?'録音を再開':'一時停止')+'">'+(isPaused?PLAY_SVG:PAUSE_SVG)+'</button>'+
+            '<span class="rec-control-label" id="pauseCtrlLabel">'+(isPaused?'再開':'一時停止')+'</span>'+
+          '</div>'+
+          '<div class="rec-control-col">'+
+            '<button class="mic-btn recording" id="btnStopRec" aria-label="録音停止">'+
+              '<svg viewBox="0 0 24 24" fill="none"><rect x="7" y="7" width="10" height="10" rx="2" fill="currentColor"/></svg>'+
+            '</button>'+
+            '<span class="rec-control-label">終了・AI解析</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="hint" style="margin-top:22px;">話し終えたら「終了・AI解析」をタップしてください。録音した音声がAIに送られ、自動で文字起こし・要約されます。</div>'+
+      '</div>';
+    }
+
+    if(r.phase === 'analyzing'){
+      return ''+
+      '<h2 class="view-title">AI解析中</h2>'+
+      '<div class="spinner-block">'+
+        '<div class="spinner"></div>'+
+        '<div class="spinner-text">録音した音声をAIが聞き取っています…<br>(通信状況により数秒〜1分ほどかかります)</div>'+
+      '</div>';
+    }
+
+    if(r.phase === 'error'){
+      return ''+
+      '<h2 class="view-title">解析に失敗しました</h2>'+
+      '<div class="hint error">'+escapeHtml(r.errorMsg)+'</div>'+
+      (r.audioUrl ? '<audio controls src="'+r.audioUrl+'" style="width:100%; margin-top:14px;"></audio>' : '')+
+      '<div class="review-actions" style="margin-top:18px;">'+
+        '<button class="btn btn-ghost" id="btnDiscard">やり直す</button>'+
+        '<button class="btn btn-primary" id="btnManualEntry">手動で入力する</button>'+
+      '</div>';
+    }
+
+    // review
+    var pointsHtml = renderPointsBlock(r);
+    var audioHtml = r.audioUrl ? '<audio controls src="'+r.audioUrl+'" style="width:100%; margin-top:12px;"></audio>' : '';
+    return ''+
+    '<h2 class="view-title">内容の確認</h2>'+
+    '<div class="card" style="padding:16px;">'+
+      '<div class="field"><label>訪問日</label><input type="date" id="f-date" value="'+escapeHtml(r.visitDate)+'"></div>'+
+      '<div class="field"><label>ユーザー名(あなた)</label><input type="text" id="f-user" placeholder="例: 山田太郎" value="'+escapeHtml(r.userName)+'"></div>'+
+      '<div class="field" style="margin-bottom:2px;"><label>商談相手</label><input type="text" id="f-client" placeholder="例: 株式会社ABC 佐藤様" value="'+escapeHtml(r.clientName)+'"></div>'+
+    '</div>'+
+    audioHtml+
+    '<div class="section-label">文字起こし（AIが自動生成・編集できます）</div>'+
+    '<textarea id="f-transcript" rows="6" placeholder="文字起こしが空です。手動で入力してください。">'+escapeHtml(r.transcript)+'</textarea>'+
+    '<div class="section-label">商談内容の要約</div>'+
+    pointsHtml+
+    '<div class="review-actions" style="margin-top:18px;">'+
+      '<button class="btn btn-ghost" id="btnDiscard">やり直す</button>'+
+      '<button class="btn btn-primary" id="btnSave">この内容で保存</button>'+
+    '</div>';
+  }
+
+  function renderPointsBlock(r){
+    var out = '<ul class="points-list points-editable">' + r.points.map(function(p,i){
+      return '<li><textarea data-point-idx="'+i+'" rows="1" oninput="this.style.height=0;this.style.height=this.scrollHeight+2+\'px\'">'+escapeHtml(p)+'</textarea></li>';
+    }).join('') + '</ul>'+
+    '<div style="margin-top:10px;"><button class="btn btn-ghost btn-sm" id="btnAddPoint">+ 項目を追加</button></div>';
+    return out;
+  }
+
+  function viewList(){
+    var memos = state.memos;
+    var body;
+    if(!memos.length){
+      body = '<div class="empty-state">'+
+        '<svg viewBox="0 0 24 24" fill="none"><path d="M5 6.5h14M5 12h14M5 17.5h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>'+
+        '<div>まだ記録がありません。<br>「記録」タブから商談メモを作成しましょう。</div>'+
+      '</div>';
+    } else {
+      body = memos.map(memoCardHtml).join('');
+    }
+    return '<h2 class="view-title">商談履歴</h2>' + body;
+  }
+
+  function memoCardHtml(m){
+    var preview = (m.summaryPoints && m.summaryPoints.length) ? m.summaryPoints.join(' ／ ') : (m.transcript||'');
+    return '<div class="card memo-card" data-open-id="'+escapeHtml(m.id)+'">'+
+      '<div class="memo-top"><span class="memo-date">'+escapeHtml(fmtDateLabel(m.date))+'</span><span class="memo-rep">'+escapeHtml(m.userName||'')+'</span></div>'+
+      '<div class="memo-partner">'+escapeHtml(m.clientName||'（商談相手未入力）')+'</div>'+
+      '<div class="memo-preview">'+escapeHtml(preview)+'</div>'+
+    '</div>';
+  }
+
+  function eventCardHtml(ev){
+    return '<div class="card event-card">'+
+      '<div style="display:flex; justify-content:space-between; align-items:flex-start;">'+
+        '<span class="event-badge">訪問予定</span>'+
+        '<button data-delete-event="'+escapeHtml(ev.id)+'" style="background:none;border:none;color:var(--ink-faint);cursor:pointer;" aria-label="削除">✕</button>'+
+      '</div>'+
+      '<p style="font-size:13px;font-weight:700;margin:8px 0 3px;">'+escapeHtml(ev.title)+'</p>'+
+      '<p style="font-size:12.5px;color:var(--ink-muted);margin:0;">'+escapeHtml(ev.clientName)+'</p>'+
+      (ev.notes ? '<p style="font-size:11.5px;color:var(--ink-faint);background:var(--surface-2);padding:6px 8px;border-radius:8px;margin-top:6px;">'+escapeHtml(ev.notes)+'</p>' : '')+
+    '</div>';
+  }
+
+  function viewCalendar(){
+    var y = state.calMonth.y, mo = state.calMonth.m;
+    var first = new Date(y, mo, 1);
+    var daysInMonth = new Date(y, mo+1, 0).getDate();
+    var startDow = first.getDay();
+    var todayIso = todayStr();
+
+    var memoDates = {}, eventDates = {};
+    state.memos.forEach(function(m){ if(m.date) memoDates[m.date] = true; });
+    state.events.forEach(function(e){ if(e.date) eventDates[e.date] = true; });
+
+    var cells = '';
+    for(var i=0;i<startDow;i++){ cells += '<div class="cal-cell empty"></div>'; }
+    for(var d=1; d<=daysInMonth; d++){
+      var iso = y+'-'+pad(mo+1)+'-'+pad(d);
+      var cls = 'cal-cell';
+      if(iso === todayIso) cls += ' today';
+      if(iso === state.selectedDate) cls += ' selected';
+      var dots = '';
+      if(memoDates[iso]) dots += '<span class="dot"></span>';
+      if(eventDates[iso]) dots += '<span class="dot gold"></span>';
+      cells += '<div class="'+cls+'" data-cal-day="'+iso+'">'+d+(dots?'<span class="dots">'+dots+'</span>':'')+'</div>';
+    }
+    var dows = ['日','月','火','水','木','金','土'].map(function(x){ return '<div class="cal-dow">'+x+'</div>'; }).join('');
+
+    var dayList = '';
+    if(state.selectedDate){
+      var dayMemos = state.memos.filter(function(m){ return m.date === state.selectedDate; });
+      var dayEvents = state.events.filter(function(e){ return e.date === state.selectedDate; });
+      dayList = '<div class="cal-day-list">'+
+        '<div style="display:flex; justify-content:space-between; align-items:center;">'+
+          '<div class="section-label" style="margin:0;">'+escapeHtml(fmtDateLabel(state.selectedDate))+'の記録</div>'+
+          '<button class="cal-add-btn" id="btnAddEvent">＋ 予定を追加</button>'+
+        '</div>'+
+        (dayMemos.length || dayEvents.length
+          ? dayMemos.map(memoCardHtml).join('') + dayEvents.map(eventCardHtml).join('')
+          : '<div class="hint">この日の記録・予定はありません。</div>')+
+      '</div>';
+    }
+
+    return '<h2 class="view-title">訪問カレンダー</h2>'+
+      '<div class="card" style="padding:14px 14px 16px;">'+
+        '<div class="cal-nav">'+
+          '<button data-cal-nav="-1" aria-label="前の月"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+
+          '<span class="cal-month">'+y+'年 '+(mo+1)+'月</span>'+
+          '<button data-cal-nav="1" aria-label="次の月"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+
+        '</div>'+
+        '<div class="cal-grid">'+dows+cells+'</div>'+
+      '</div>'+
+      dayList;
+  }
+
+  function renderEventModal(){
+    var wrap = document.createElement('div');
+    wrap.className = 'modal-overlay';
+    wrap.id = 'eventModalOverlay';
+    wrap.innerHTML = '<div class="modal-sheet">'+
+      '<h3>訪問予定を追加</h3>'+
+      '<div class="field"><label>件名</label><input type="text" id="ev-title" placeholder="例: フォローアップ訪問" value="'+escapeHtml(state.newEvent.title)+'"></div>'+
+      '<div class="field"><label>商談相手</label><input type="text" id="ev-client" placeholder="お名前・会社名" value="'+escapeHtml(state.newEvent.clientName)+'"></div>'+
+      '<div class="field" style="margin-bottom:6px;"><label>メモ</label><textarea id="ev-notes" rows="2" placeholder="持参資料など">'+escapeHtml(state.newEvent.notes)+'</textarea></div>'+
+      '<div class="review-actions">'+
+        '<button class="btn btn-ghost" id="btnCancelEvent">キャンセル</button>'+
+        '<button class="btn btn-primary" id="btnSaveEvent">追加する</button>'+
+      '</div>'+
+    '</div>';
+    document.body.appendChild(wrap);
+  }
+
+  function viewDetail(){
+    var m = state.memos.find(function(x){ return x.id === state.detailId; });
+    if(!m){ state.detailId = null; return viewList(); }
+    var pts = (m.summaryPoints||[]).map(function(p){ return '<li>'+escapeHtml(p)+'</li>'; }).join('');
+    var confirmHtml = state.confirmDeleteId === m.id ?
+      '<div class="confirm-strip"><span>この記録を削除しますか？</span>'+
+        '<span style="display:flex; gap:6px;"><button class="btn btn-sm btn-ghost" id="btnCancelDelete">取消</button><button class="btn btn-sm btn-danger" id="btnConfirmDelete">削除する</button></span>'+
+      '</div>' : '';
+    return ''+
+    '<button class="back-link" id="btnBack"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>戻る</button>'+
+    '<h2 class="view-title" style="margin-top:10px;">'+escapeHtml(fmtDateLabel(m.date))+'</h2>'+
+    '<div class="card" style="padding:16px; margin-bottom:16px;">'+
+      '<div class="kv-row"><div class="kv-key">ユーザー名</div><div class="kv-val">'+escapeHtml(m.userName||'—')+'</div></div>'+
+      '<div class="kv-row"><div class="kv-key">商談相手</div><div class="kv-val">'+escapeHtml(m.clientName||'—')+'</div></div>'+
+    '</div>'+
+    '<div class="section-label">商談内容</div>'+
+    (pts ? '<ul class="points-list">'+pts+'</ul>' : '<div class="hint">要約はありません。</div>')+
+    '<div class="section-label">文字起こし全文</div>'+
+    '<div class="transcript-box">'+escapeHtml(m.transcript||'（記録なし）')+'</div>'+
+    '<div style="margin-top:18px;"><button class="btn btn-danger btn-block" id="btnDeleteMemo">この記録を削除</button></div>'+
+    confirmHtml;
+  }
+
+  // ---------- events ----------
+  els.tabbar.addEventListener('click', function(e){
+    var btn = e.target.closest('.tab');
+    if(!btn) return;
+    if(state.record.phase === 'recording' || state.record.phase === 'paused') stopRecording();
+    state.detailId = null;
+    state.view = btn.dataset.view;
+    render();
+  });
+
+  document.addEventListener('click', async function(e){
+    var t = e.target;
+
+    if(t.closest('#btnStartRec')){ startRecording(); return; }
+    if(t.closest('#btnStopRec')){ stopRecording(); return; }
+    if(t.closest('#btnPauseRec')){
+      if(state.record.phase === 'paused') resumeRecording(); else pauseRecording();
+      return;
+    }
+    if(t.closest('#btnDiscard')){ resetRecordDraft(); render(); return; }
+    if(t.closest('#btnManualEntry')){
+      var r0 = state.record;
+      r0.userName = r0.userName || loadLastName();
+      r0.clientName = r0.clientName || '';
+      r0.transcript = r0.transcript || '';
+      r0.points = r0.points.length ? r0.points : [''];
+      r0.phase = 'review';
+      render();
+      return;
+    }
+
+    if(t.closest('#btnSave')){
+      var r = state.record;
+      r.visitDate = (document.getElementById('f-date')||{}).value || r.visitDate;
+      r.userName = (document.getElementById('f-user')||{}).value || r.userName;
+      if(r.userName) saveLastName(r.userName);
+      r.clientName = (document.getElementById('f-client')||{}).value || r.clientName;
+      var tEl = document.getElementById('f-transcript');
+      if(tEl) r.transcript = tEl.value;
+      var pointEls = els.viewport.querySelectorAll('[data-point-idx]');
+      var pts = [];
+      pointEls.forEach(function(pe){ if(pe.value.trim()) pts.push(pe.value.trim()); });
+      var memo = {
+        id: uid(),
+        date: r.visitDate,
+        userName: r.userName,
+        clientName: r.clientName,
+        transcript: r.transcript,
+        summaryPoints: pts,
+        createdAt: new Date().toISOString()
+      };
+      saveMemo(memo);
+      showToast('保存しました');
+      resetRecordDraft();
+      state.view = 'list';
+      render();
+      return;
+    }
+
+    if(t.closest('#btnAddPoint')){
+      var pe = els.viewport.querySelectorAll('[data-point-idx]');
+      var cur = []; pe.forEach(function(x){ cur.push(x.value); });
+      cur.push('');
+      state.record.points = cur;
+      render();
+      return;
+    }
+
+    var openCard = t.closest('[data-open-id]');
+    if(openCard){ state.detailId = openCard.dataset.openId; state.confirmDeleteId = null; render(); return; }
+    if(t.closest('#btnBack')){ state.detailId = null; render(); return; }
+    if(t.closest('#btnDeleteMemo')){ state.confirmDeleteId = state.detailId; render(); return; }
+    if(t.closest('#btnCancelDelete')){ state.confirmDeleteId = null; render(); return; }
+    if(t.closest('#btnConfirmDelete')){ deleteMemo(state.detailId); return; }
+
+    var delEv = t.closest('[data-delete-event]');
+    if(delEv){ deleteEvent(delEv.dataset.deleteEvent); return; }
+
+    var calNav = t.closest('[data-cal-nav]');
+    if(calNav){
+      var dir = +calNav.dataset.calNav;
+      var m2 = state.calMonth.m + dir, y2 = state.calMonth.y;
+      if(m2<0){ m2=11; y2--; } else if(m2>11){ m2=0; y2++; }
+      state.calMonth = {y:y2, m:m2};
+      render();
+      return;
+    }
+    var calDay = t.closest('[data-cal-day]');
+    if(calDay){
+      var iso = calDay.dataset.calDay;
+      state.selectedDate = (state.selectedDate === iso) ? null : iso;
+      render();
+      return;
+    }
+
+    if(t.closest('#btnAddEvent')){
+      state.newEvent = {title:'', clientName:'', notes:''};
+      state.showEventModal = true;
+      renderEventModal();
+      return;
+    }
+    if(t.id === 'eventModalOverlay' || t.closest('#btnCancelEvent')){
+      state.showEventModal = false;
+      var ov = document.getElementById('eventModalOverlay'); if(ov) ov.remove();
+      return;
+    }
+    if(t.closest('#btnSaveEvent')){
+      var title = (document.getElementById('ev-title')||{}).value || '';
+      var client = (document.getElementById('ev-client')||{}).value || '';
+      var notes = (document.getElementById('ev-notes')||{}).value || '';
+      if(!title.trim() || !client.trim()){ showToast('件名と商談相手を入力してください'); return; }
+      saveEvent({id: uid(), date: state.selectedDate || todayStr(), title: title.trim(), clientName: client.trim(), notes: notes.trim()});
+      state.showEventModal = false;
+      var ov2 = document.getElementById('eventModalOverlay'); if(ov2) ov2.remove();
+      render();
+      return;
+    }
+  });
+
+  document.addEventListener('change', function(e){
+    var r = state.record;
+    if(e.target.id === 'f-date'){ r.visitDate = e.target.value || r.visitDate; }
+    if(e.target.id === 'f-user'){ r.userName = e.target.value; }
+    if(e.target.id === 'f-client'){ r.clientName = e.target.value; }
+    if(e.target.id === 'f-file'){
+      var file = e.target.files && e.target.files[0];
+      if(file) handleFilePicked(file);
+    }
+  });
+
+  // ---------- boot ----------
+  loadAll();
+  render();
+})();
+</script>
+</body>
+</html>
