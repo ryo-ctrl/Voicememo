@@ -79,6 +79,43 @@ function safeParseJson(text) {
   return JSON.parse(raw.trim());
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Geminiは無料枠だと一時的に混雑して503(UNAVAILABLE)を返すことがあるため、
+// 少し待って自動的に再試行する。それでもダメなら候補モデルを順番に試す。
+const MODEL_CANDIDATES = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash"];
+const RETRY_DELAYS_MS = [2000, 5000];
+
+function isOverloadedError(error) {
+  const status = error && (error.status || (error.error && error.error.status));
+  const code = error && (error.code || (error.error && error.error.code));
+  const message = (error && error.message) || "";
+  return status === "UNAVAILABLE" || code === 503 || /unavailable|high demand|需要が急増/i.test(message);
+}
+
+async function generateWithRetry(params) {
+  let lastError;
+  for (const model of MODEL_CANDIDATES) {
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      try {
+        return await ai.models.generateContent({ ...params, model });
+      } catch (error) {
+        lastError = error;
+        if (!isOverloadedError(error)) throw error; // 過負荷以外のエラーは即座に上に投げる
+        if (attempt < RETRY_DELAYS_MS.length) {
+          console.warn(`モデル ${model} が混雑中。${RETRY_DELAYS_MS[attempt]}ms 待って再試行します…`);
+          await sleep(RETRY_DELAYS_MS[attempt]);
+        } else {
+          console.warn(`モデル ${model} は再試行しても混雑中。次の候補モデルに切り替えます…`);
+        }
+      }
+    }
+  }
+  throw lastError;
+}
+
 app.post("/api/transcribe", async (req, res) => {
   try {
     if (!ai) {
@@ -117,8 +154,7 @@ JSON以外の文章は出力しないでください。
 `.trim(),
     };
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+    const response = await generateWithRetry({
       contents: [audioPart, promptPart],
       config: {
         responseMimeType: "application/json",
@@ -134,6 +170,11 @@ JSON以外の文章は出力しないでください。
     res.json(result);
   } catch (error) {
     console.error("Transcription error:", error);
+    if (isOverloadedError(error)) {
+      return res.status(503).json({
+        error: "AIサーバーが混み合っています。1分ほど待ってから、もう一度お試しください。",
+      });
+    }
     res.status(500).json({
       error: error instanceof Error ? error.message : "サーバーで不明なエラーが発生しました。",
     });
@@ -146,6 +187,4 @@ app.get("/healthz", (req, res) => res.send("ok"));
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
   if (!GEMINI_API_KEY) {
-    console.warn("警告: GEMINI_API_KEY が設定されていません。.env ファイルを確認してください。");
-  }
-});
+    console.warn("警告: GEMINI_API_KEY
